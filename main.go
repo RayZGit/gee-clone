@@ -2,28 +2,22 @@ package main
 
 import (
 	"fmt"
+	"github.com/RayZGit/gee-clone/gee"
 	"log"
 	"net/http"
 )
 
 func main() {
-	engine := new(Engine)
-	log.Fatal(http.ListenAndServe(":8080", engine))
-}
+	r := gee.New()
+	r.GET("/", func(w http.ResponseWriter, req *http.Request) {
+		fmt.Fprintf(w, "URL.Path = %s\n", req.URL.Path)
+	})
 
-type Engine struct {
-}
-
-func (engine *Engine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	switch r.URL.Path {
-	case "/":
-		fmt.Fprintf(w, "URL.Path = %q\n", r.URL.Path)
-	case "/hello":
-		for k, v := range r.Header {
+	r.GET("/hello", func(w http.ResponseWriter, req *http.Request) {
+		for k, v := range req.Header {
 			fmt.Fprintf(w, "Header[%q] = %q\n", k, v)
 		}
-	default:
-		fmt.Fprintf(w, "404 NOT FOUND: %s\n", r.URL)
+	})
 
-	}
+	log.Fatal(r.Run(":8080"))
 }
